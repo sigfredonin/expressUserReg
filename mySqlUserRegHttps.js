@@ -53,10 +53,13 @@ app.use(express.static('public'));
 
 // Run the servers
 const httpServer = http.createServer(credentials, app);
-httpServer.listen(8081, function() {
-  console.log("Play App server listening on HTTP port " + 8081);
+const http_port = process.env.PORT || 8081;
+httpServer.listen(http_port, function() {
+  console.log("Play App server listening on HTTP port " + http_port);
 });
+
 const httpsServer = https.createServer(credentials, app_https);
-httpsServer.listen(8443, function() {
-  console.log("Play App server listening on HTTPS port " + 8443);
+const https_port = process.env.PORT_HTTPS || 8443;
+httpsServer.listen(https_port, function() {
+  console.log("Play App server listening on HTTPS port " + https_port);
 });
