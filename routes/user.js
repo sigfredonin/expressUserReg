@@ -20,17 +20,34 @@ router.get("/test", (req, res) => {
 // Create DB connection pool
 const mysql = require('mysql');
 
-const pool = mysql.createPool({
+const db_local = {
   connectionLimit:10,
   host     : 'localhost',
   user     : 'tester',
   password : 'probador!Oct14!',
   database : 'playapp'
-})
+};
+
+const db_cloud = {
+  connectionLimit:10,
+  host     : 'us-cdbr-iron-east-05.cleardb.net',
+  user     : 'bb6547e1951f57',
+  password : '9694009a',
+  database : 'heroku_a5e9b94760bea26'
+};
+
+let pool = null;
+if (process.env.USE_DB == 'LOCAL') {
+  pool = mysql.createPool(db_local);
+  console.log("Use local DB.")
+} else {
+  pool = mysql.createPool(db_cloud);
+  console.log("Use cloud DB.")
+}
 
 function getConnection() {
   return pool;
-}
+};
 
 /* ----------------------------------------------------------------------------
   HTTPS processing - login and user DB update
