@@ -31,7 +31,6 @@ function getConnection() {
 
 // Use Express app
 const express = require("express");
-const app = express();
 const app_https = express();
 
 // Use application/x-www-form-urlencoded parser to decode POST body
@@ -41,7 +40,6 @@ app_https.use(urlencodedParser);
 
 // Use Morgan request logging
 const morgan = require('morgan');
-app.use(morgan('combined'));
 app_https.use(morgan('combined'));
 
 // Define user management routes
@@ -49,15 +47,9 @@ const router = require('./routes/user.js');
 app_https.use(router);
 
 // For static html files in public folder
-app.use(express.static('public'));
+app_https.use(express.static('public'));
 
-// Run the servers
-const httpServer = http.createServer(credentials, app);
-const http_port = process.env.PORT || 8081;
-httpServer.listen(http_port, function() {
-  console.log("Play App server listening on HTTP port " + http_port);
-});
-
+// Run the server
 const httpsServer = https.createServer(credentials, app_https);
 const https_port = process.env.PORT_HTTPS || 8443;
 httpsServer.listen(https_port, function() {
