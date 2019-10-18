@@ -50,7 +50,7 @@ app_https.use(router);
 app_https.use(express.static('public'));
 
 // Run the server
-const httpsServer = https.createServer(credentials, app_https);
+const httpsServer = http.createServer(credentials, app_https);
 const https_port = process.env.PORT || 8443;
 httpsServer.listen(https_port, function() {
   console.log("Play App server listening on HTTPS port " + https_port);
