@@ -4,7 +4,8 @@
   Sig Nin
   October 21, 2019
 */
-const test = true;
+const test = false;
+const debug = true;
 
 const crypto = require('crypto');
 
@@ -13,20 +14,26 @@ const keyLn = 384;
 const algo = 'sha384';
 
 function setPassword (password) {
-  console.log(`Set password : ${password}`);
+  if (debug) {
+    console.log(`Set password : ${password}`);
+  };
   const salt = crypto.randomBytes(16).toString('base64');
   const hash = crypto.pbkdf2Sync(password, salt, iters, keyLn, algo).toString('base64');
   return { salt: salt, hash: hash };
 };
 
 function validatePassword (password, salt, hash) {
-  console.log(`Validate password : ${password} ${salt} ${hash}`);
+  if (debug) {
+    console.log(`Validate password : ${password} ${salt} ${hash}`);
+  };
   const computed_hash = crypto.pbkdf2Sync(password, salt, iters, keyLn, algo).toString('base64');
   return computed_hash === hash;
 };
 
 function validateNewPassword (password1, password2) {
-  console.log(`Validate new password : ${password1} ${password2}`);
+  if (debug){
+    console.log(`Validate new password : ${password1} ${password2}`);
+  };
   // check that both versions of the new password are the same
   if (password1 != password2) {
     console.log(`Password mismatch - ${password1} != ${password2}`);
