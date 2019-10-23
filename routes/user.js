@@ -8,6 +8,7 @@
 const debug = true;
 const express = require('express');
 const router = express.Router();
+const pw = require('../pw/password.js');
 
 let testIndex = 1;
 router.get("/test", (req, res) => {
@@ -53,9 +54,6 @@ function getConnection() {
   HTTPS processing - login and user DB update
 ---------------------------------------------------------------------------- */
 
-// Processing user passwords requires SHA-256
-const crypto = require('crypto');
-
 // Echo user registration data as json string
 function respond_with_json_user_req(req, res, data, type) {
   // Prepare output in JSON format
@@ -79,24 +77,18 @@ router.post('/process_user_reg', (req, res) => {
   if (debug == true) {
     console.log(req.body);
   }
-  if (req.body.pw_1 != req.body.pw_2) {
-    console.log(`Password mismatch - ${req.body.pw_1} != ${req.body.pw_2}`);
+  // validate the proposed password
+  if (err = pw.validateNewPassword(req.body.pw_1, req.body.pw_2)) {
     res.status(400);
-    res.end('Passwords do not match.');
+    res.end(err);
     return;
   }
-  // check that the new password is not null
-  if (req.body.pw_1 == '') {
-    console.log('Empty password.');
-    res.status(400);
-    res.end(`New password invalid - empty password not allowed.`);
-    return;
-  }
-  const pwhash = crypto.createHash('sha256').update(req.body.pw_1).digest('base64');
+  const { salt: pwsalt, hash: pwhash } = pw.setPassword(req.body.pw_1);
   const info = {
     first_name: req.body.first_name,
     last_name: req.body.last_name,
     userid: req.body.userid,
+    pwsalt: pwsalt,
     pwhash: pwhash
   };
   let sql = 'INSERT INTO users SET ?';
@@ -119,24 +111,15 @@ router.post('/process_user_pw', (req, res) => {
   if (debug == true) {
     console.log(req.body);
   }
-  // check that both versions of the new password are the same
-  if (req.body.new_1 != req.body.new_2) {
-    console.log('Password mismatch.');
+  // validate the proposed new password
+  if (err = pw.validateNewPassword(req.body.new_1, req.body.new_2)) {
     res.status(400);
-    res.end(`New passwords do not match - ${req.body.new_1} != ${req.body.new_2}.`);
-    return;
-  }
-  // check that the new password is not null
-  if (req.body.new_1 == '') {
-    console.log('Empty password.');
-    res.status(400);
-    res.end(`New password invalid - empty password not allowed.`);
+    res.end(err);
     return;
   }
   // fetch the current password from the DB
   console.log(`Getting info for user ${userid}`);
   const sql_get = 'SELECT * FROM users WHERE userid = ?';
-  let pwhash = null;
   getConnection().query(sql_get, [userid], (err, rows, fields) => {
     if (err) {
       console.log(`Error requesting user info: ${err}`);
@@ -152,14 +135,12 @@ router.post('/process_user_pw', (req, res) => {
       res.end(`Could not find userid: ${userid}`);
       return;
     }
-    pwhash = rows[0].pwhash;
+    const { pwsalt, pwhash } = rows[0];
     // if a current password set, verify it matches what was provided
-    console.log(`Hash of current password in DB: ${pwhash}`)
+    console.log(`Current password in DB, salt: ${pwsalt}, hash: ${pwhash}`);
     if (pwhash != null) {
       console.log('Checking hash of given password against hash from DB')
-      const hash = crypto.createHash('sha256').update(req.body.pw).digest('base64');
-      console.log(`Hash of current password in update request: ${hash}`)
-      if (hash != pwhash) {
+      if (!pw.validatePassword(req.body.new_1, pwsalt, pwhash)) {
         console.log('Current password given is incorrect.');
         res.status(400);
         res.end(`Incorrect password for userid: ${userid}`);
@@ -169,8 +150,8 @@ router.post('/process_user_pw', (req, res) => {
       console.log('No password set - will set new password.')
     }
     // update the password in the DB
-    pwhash = crypto.createHash('sha256').update(req.body.new_1).digest('base64');
-    let sql_update = `UPDATE users SET pwhash = '${pwhash}' WHERE userid = '${userid}'`;
+    const { salt, hash } = pw.setPassword(req.body.new_1);
+    let sql_update = `UPDATE users SET pwsalt = '${salt}', pwhash = '${hash}' WHERE userid = '${userid}'`;
     getConnection().query(sql_update, (err, result) => {
       if (err) {
         console.log(`Error updating password for userid ${userid}: ${err}`);

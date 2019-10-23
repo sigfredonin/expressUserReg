@@ -3,7 +3,7 @@ Test Users
 First Name    Last Name         Userid              PW
 --------------------------------------------------------------------
 a             dummy             adummy              NULL
-Silent        Sam               ssam                ss01!!
+Silent        Sam               ssam                samiwas01!!
 Sig           Nin               signin              thisTime01!
 Charlie       Tuna              tuna                fishy01!!
 Babe          Ruth              candy               bar01!@!

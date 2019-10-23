@@ -34,6 +34,6 @@ app.use(express.static('public'));
 const http = require("http");
 const httpServer = http.createServer(app);
 const port = process.env.PORT || 8081;
-httpServer.listen(port, function() {
+httpServer.listen(port, () => {
   console.log("Play App server listening on http port " + port);
 });
