@@ -151,8 +151,9 @@ router.post('/process_user_pw', (req, res) => {
     }
     // update the password in the DB
     const { salt, hash } = pw.setPassword(req.body.new_1);
-    let sql_update = `UPDATE users SET pwsalt = '${salt}', pwhash = '${hash}' WHERE userid = '${userid}'`;
-    getConnection().query(sql_update, (err, result) => {
+    const newCreds = { pwsalt : salt, pwhash : hash };
+    let sql_update = `UPDATE users SET ? WHERE userid = '${userid}'`;
+    getConnection().query(sql_update, newCreds, (err, result) => {
       if (err) {
         console.log(`Error updating password for userid ${userid}: ${err}`);
         res.status(500);

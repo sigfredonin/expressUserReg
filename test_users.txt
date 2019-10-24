@@ -6,8 +6,10 @@ a             dummy             adummy              NULL
 Silent        Sam               ssam                samiwas01!!
 Sig           Nin               signin              thisTime01!
 Charlie       Tuna              tuna                fishy01!!
-Babe          Ruth              candy               bar01!@!
+Babe          Ruth              candy               bar01!@! sweetbar01!@!
 Alphonse      Alonzo            aa                  az01!
 Mary          Barr              mbarr               vara01!
 Linda         Femme             linda               beaut01!
 Anna          Purna             ap                  pura01! purisima01!
+Emma          Flake             emma                unrocked01!
+Charles       Darwin            beagler             evolved01!
